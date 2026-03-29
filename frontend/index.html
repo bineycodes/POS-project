@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">🛒</div>
+      <div>
+        <h1>POS System</h1>
+        <p>Kwame Biney</p>
+      </div>
+    </div>
+    <div class="login-field">
+      <label>Username</label>
+      <input id="loginUser" type="text" value="admin" placeholder="admin / cashier / manager">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input id="loginPass" type="password" value="password" placeholder="Enter password">
+    </div>
+    <button class="btn primary full" style="margin-top:4px" onclick="doLogin()">Sign In</button>
+    <p id="loginErr" class="login-error">Invalid username or password</p>
+
+  </div>
+</div>
+
+<!-- ══════════ APP SHELL ══════════ -->
+<div id="appShell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">🛒</div>
+      <div>
+        <div class="brand-name">QuickPOS</div>
+        <div class="brand-sub">v2.0 SQLite</div>
+      </div>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="avatar" id="sidebarAvatar">A</div>
+      <div class="user-info">
+        <p id="sidebarUsername">admin</p>
+        <p id="sidebarRole">Admin</p>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section">Main</div>
+      <button class="nav-btn active" onclick="showPage('dashboard',this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </button>
+      <button class="nav-btn" onclick="showPage('pos',this)">
+        <span class="nav-icon">🛒</span> Point of Sale
+      </button>
+
+      <div class="nav-section" style="margin-top:8px">Catalog</div>
+      <button class="nav-btn" onclick="showPage('products',this)">
+        <span class="nav-icon">📦</span> Products
+      </button>
+      <button class="nav-btn" onclick="showPage('inventory',this)">
+        <span class="nav-icon">🗄️</span> Inventory
+        <span class="nav-badge" id="lowStockBadge" style="display:none">0</span>
+      </button>
+
+      <div class="nav-section" style="margin-top:8px">People</div>
+      <button class="nav-btn" onclick="showPage('customers',this)">
+        <span class="nav-icon">👥</span> Customers
+      </button>
+
+      <div class="nav-section" style="margin-top:8px">Reports</div>
+      <button class="nav-btn" onclick="showPage('sales',this)">
+        <span class="nav-icon">🧾</span> Sales History
+      </button>
+      <button class="nav-btn" onclick="showPage('reports',this)">
+        <span class="nav-icon">📈</span> Analytics
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span id="dbStatus" class="db-status ok">● Connecting…</span>
+      <button class="btn sm danger" style="margin-top:10px;width:100%" onclick="doLogout()">Log Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <h2 id="topbarTitle">Dashboard</h2>
+        <p id="topbarSub">Overview of today's activity</p>
+      </div>
+      <div class="topbar-right">
+        <div class="time-display" id="clockDisplay">00:00:00</div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ══ DASHBOARD PAGE ══ -->
+      <div class="page active" id="page-dashboard">
+        <div class="metrics-row metrics-4" style="grid-template-columns:repeat(3,1fr) 1fr">
+          <!-- row 1 -->
+        </div>
+        <div class="metrics-row" style="grid-template-columns:repeat(6,1fr)">
+          <div class="metric-card blue">
+            <div class="metric-icon">💰</div>
+            <div class="metric-label">Today's Revenue</div>
+            <div class="metric-value blue" id="d-revenue">GHS 0.00</div>
+          </div>
+          <div class="metric-card green">
+            <div class="metric-icon">🧾</div>
+            <div class="metric-label">Today's Transactions</div>
+            <div class="metric-value green" id="d-txns">0</div>
+          </div>
+          <div class="metric-card teal">
+            <div class="metric-icon">📦</div>
+            <div class="metric-label">Total Products</div>
+            <div class="metric-value" style="color:var(--teal)" id="d-products">0</div>
+          </div>
+          <div class="metric-card amber">
+            <div class="metric-icon">⚠️</div>
+            <div class="metric-label">Low Stock Items</div>
+            <div class="metric-value amber" id="d-lowstock">0</div>
+          </div>
+          <div class="metric-card purple">
+            <div class="metric-icon">👥</div>
+            <div class="metric-label">Customers</div>
+            <div class="metric-value purple" id="d-customers">0</div>
+          </div>
+          <div class="metric-card green">
+            <div class="metric-icon">📊</div>
+            <div class="metric-label">All-Time Revenue</div>
+            <div class="metric-value green" id="d-allrevenue">GHS 0.00</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Recent Transactions</h3>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Sale ID</th><th>Date / Time</th><th>Cashier</th><th>Customer</th><th>Total</th><th>Payment</th></tr></thead>
+              <tbody id="d-recent"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ POS PAGE ══ -->
+      <div class="page" id="page-pos">
+        <div class="pos-grid">
+          <!-- LEFT: products -->
+          <div class="pos-left">
+            <div class="pos-search-bar">
+              <input id="posSearch" placeholder="🔍  Search products…" oninput="renderProductGrid(this.value)" style="flex:1">
+              <select id="posCatFilter" onchange="renderProductGrid(document.getElementById('posSearch').value)" style="width:160px">
+                <option value="">All categories</option>
+                <option>Electronics</option>
+                <option>Stationery</option>
+                <option>Clothing</option>
+                <option>Food &amp; Drinks</option>
+                <option>Health</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="product-grid" id="productGrid"></div>
+          </div>
+
+          <!-- RIGHT: cart -->
+          <div class="cart-panel">
+            <div class="cart-header">
+              <h3>Cart</h3>
+              <button class="btn sm danger" onclick="cart=[];renderCart()">Clear</button>
+            </div>
+            <div class="cart-items" id="cartItems">
+              <div class="cart-empty">🛒<br>Cart is empty<br><span style="font-size:11px">Click a product to add</span></div>
+            </div>
+            <div class="cart-footer">
+              <div class="summary-row"><span class="summary-label">Subtotal</span><span class="summary-val" id="cartSubtotal">GHS 0.00</span></div>
+              <div class="summary-row">
+                <span class="summary-label">Discount %</span>
+                <input type="number" id="discountInp" value="0" min="0" max="100" style="width:70px;text-align:right" oninput="calcTotals()">
+              </div>
+              <div class="summary-row"><span class="summary-label">Discount amt</span><span class="summary-val" id="cartDiscount" style="color:var(--green)">GHS 0.00</span></div>
+              <div class="summary-row"><span class="summary-label">Tax (15%)</span><span class="summary-val" id="cartTax">GHS 0.00</span></div>
+              <hr class="divider">
+              <div class="summary-row">
+                <span class="summary-total-label">Total</span>
+                <span class="summary-total mono" id="cartTotal">GHS 0.00</span>
+              </div>
+              <hr class="divider">
+              <div class="field">
+                <label class="field-label">Customer</label>
+                <select id="posCustomer"></select>
+              </div>
+              <div class="field">
+                <label class="field-label">Payment Method</label>
+                <select id="payMethod" onchange="calcChange()">
+                  <option>Cash</option>
+                  <option>Mobile Money</option>
+                  <option>Card</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label">Cash Received</label>
+                <input type="number" id="cashReceived" placeholder="0.00" oninput="calcChange()">
+              </div>
+              <div id="changeDisplay" style="display:none;margin-bottom:10px"></div>
+              <button class="btn primary full xl" onclick="completeSale()">✓ Complete Sale</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PRODUCTS PAGE ══ -->
+      <div class="page" id="page-products">
+        <div class="card" id="prodFormCard">
+          <div class="card-header">
+            <h3>Add / Edit Product</h3>
+            <div class="flex">
+              <button class="btn sm" id="cancelEditBtn" style="display:none" onclick="cancelEdit()">Cancel Edit</button>
+            </div>
+          </div>
+          <div class="form-grid3">
+            <div class="field"><label class="field-label">Product Name *</label><input id="pName" placeholder="e.g. Wireless Headphones"></div>
+            <div class="field"><label class="field-label">Category *</label>
+              <select id="pCat">
+                <option>Electronics</option><option>Stationery</option><option>Clothing</option>
+                <option>Food &amp; Drinks</option><option>Health</option><option>Other</option>
+              </select>
+            </div>
+            <div class="field"><label class="field-label">Price (GHS) *</label><input id="pPrice" type="number" step="0.01" placeholder="0.00"></div>
+            <div class="field"><label class="field-label">Stock Quantity *</label><input id="pQty" type="number" placeholder="0"></div>
+            <div class="field"><label class="field-label">Barcode</label><input id="pBarcode" placeholder="e.g. EL001"></div>
+            <div class="field"><label class="field-label">Supplier</label><input id="pSupplier" placeholder="e.g. TechGH Ltd"></div>
+          </div>
+          <div class="flex">
+            <button class="btn primary" id="saveProductBtn" onclick="saveProduct()">Add Product</button>
+            <button class="btn" onclick="clearProductForm()">Clear Form</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3>Products (<span id="prodCount">0</span>)</h3>
+            <input id="prodSearch" placeholder="Search products…" style="width:220px" oninput="renderProducts()">
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Barcode</th><th>Supplier</th><th>Actions</th></tr></thead>
+              <tbody id="productTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ INVENTORY PAGE ══ -->
+      <div class="page" id="page-inventory">
+        <div class="card">
+          <div class="card-header"><h3>Stock Adjustment</h3></div>
+          <div class="flex" style="gap:14px;flex-wrap:wrap">
+            <div style="flex:2;min-width:200px"><label class="field-label">Product</label><select id="invProduct"></select></div>
+            <div style="width:120px"><label class="field-label">Quantity</label><input id="invQtyAdj" type="number" placeholder="0" min="1"></div>
+            <div style="width:140px"><label class="field-label">Action</label>
+              <select id="invType"><option value="add">Add Stock</option><option value="remove">Remove Stock</option></select>
+            </div>
+            <div style="padding-top:22px"><button class="btn primary" onclick="adjustStock()">Apply Adjustment</button></div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-header"><h3>Stock Levels — All Products</h3><span class="badge red" id="invLowCount">0</span></div>
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr><th>Product</th><th>Category</th><th>Qty</th><th>Status</th><th>Supplier</th></tr></thead>
+                <tbody id="invTable"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Inventory Log</h3></div>
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr><th>Date</th><th>Product</th><th>Type</th><th>Change</th><th>Note</th></tr></thead>
+                <tbody id="invLogTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ CUSTOMERS PAGE ══ -->
+      <div class="page" id="page-customers">
+        <div class="card">
+          <div class="card-header"><h3>Register New Customer</h3></div>
+          <div class="form-grid2">
+            <div class="field"><label class="field-label">Full Name *</label><input id="cName" placeholder="e.g. Akosua Mensah"></div>
+            <div class="field"><label class="field-label">Phone Number</label><input id="cPhone" placeholder="e.g. 0241234567"></div>
+            <div class="field"><label class="field-label">Email Address</label><input id="cEmail" type="email" placeholder="e.g. akosua@email.com"></div>
+            <div class="field"><label class="field-label">Address</label><input id="cAddress" placeholder="e.g. Kumasi, Ashanti"></div>
+          </div>
+          <button class="btn primary" onclick="saveCustomer()">Register Customer</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Customers (<span id="custCount">0</span>)</h3></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th>Loyalty Pts</th><th>Purchases</th><th>Total Spent</th></tr></thead>
+              <tbody id="customerTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SALES HISTORY PAGE ══ -->
+      <div class="page" id="page-sales">
+        <div class="card">
+          <div class="card-header"><h3>Sales History (Last 50)</h3></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Sale ID</th><th>Date / Time</th><th>Cashier</th><th>Customer</th><th>Total</th><th>Payment</th><th>Items</th></tr></thead>
+              <tbody id="salesTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ REPORTS PAGE ══ -->
+      <div class="page" id="page-reports">
+        <div class="metrics-row metrics-3">
+          <div class="metric-card green">
+            <div class="metric-icon">💰</div>
+            <div class="metric-label">Total Revenue</div>
+            <div class="metric-value green" id="r-revenue">GHS 0.00</div>
+          </div>
+          <div class="metric-card blue">
+            <div class="metric-icon">🧾</div>
+            <div class="metric-label">Total Transactions</div>
+            <div class="metric-value blue" id="r-txns">0</div>
+          </div>
+          <div class="metric-card purple">
+            <div class="metric-icon">📊</div>
+            <div class="metric-label">Average Sale Value</div>
+            <div class="metric-value purple" id="r-avg">GHS 0.00</div>
+          </div>
+        </div>
+        <div class="grid3">
+          <div class="card">
+            <div class="card-header"><h3>Top Products</h3></div>
+            <table class="tbl"><thead><tr><th>Product</th><th>Units</th><th>Revenue</th></tr></thead><tbody id="r-top"></tbody></table>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Payment Methods</h3></div>
+            <table class="tbl"><thead><tr><th>Method</th><th>Count</th><th>Total</th></tr></thead><tbody id="r-pay"></tbody></table>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Daily Sales (Last 7)</h3></div>
+            <table class="tbl"><thead><tr><th>Date</th><th>Txns</th><th>Revenue</th></tr></thead><tbody id="r-daily"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /appShell -->
+
+<!-- RECEIPT MODAL -->
+<div id="receiptModal" style="display:none" class="receipt-modal" onclick="if(event.target===this)closeReceipt()">
+  <div class="receipt-box">
+    <div class="receipt-top">
+      <h2>🛒 QuickPOS</h2>
+      <p>Transaction Receipt</p>
+    </div>
+    <div class="receipt-body" id="receiptBody"></div>
+    <div class="receipt-footer">
+      <p>Thank you for your purchase!</p>
+      <p style="margin-top:4px">Powered by QuickPOS • SQLite</p>
+      <button class="btn primary full" style="margin-top:14px" onclick="closeReceipt()">Close Receipt</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span class="toast-msg"></span>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
