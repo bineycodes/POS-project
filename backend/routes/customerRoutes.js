@@ -5,13 +5,13 @@ const pool = require('../config/db');
 // GET /api/customers
 router.get('/', async (req, res) => {
     try {
-        const [rows] = await pool.execute(`
+        const result = await pool.query(`
             SELECT c.*, COUNT(s.id) as purchase_count, COALESCE(SUM(s.total), 0) as total_spent
             FROM customers c 
             LEFT JOIN sales s ON s.customer_id = c.id
             GROUP BY c.id ORDER BY c.name
         `);
-        res.json(rows);
+        res.json(result.rows);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error fetching customers' });
@@ -22,11 +22,11 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     const { name, phone, email, address } = req.body;
     try {
-        const [result] = await pool.execute(
-            'INSERT INTO customers (name, phone, email, address) VALUES (?, ?, ?, ?)',
+        const result = await pool.query(
+            'INSERT INTO customers (name, phone, email, address) VALUES ($1, $2, $3, $4) RETURNING id',
             [name, phone || null, email || null, address || null]
         );
-        res.status(201).json({ message: 'Customer registered successfully', id: result.insertId });
+        res.status(201).json({ message: 'Customer registered successfully', id: result.rows[0].id });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error adding customer' });

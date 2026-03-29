@@ -12,13 +12,13 @@ exports.login = async (req, res) => {
 
     try {
         // Find user by username
-        const [rows] = await pool.execute('SELECT * FROM users WHERE username = ?', [username]);
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
         
-        if (rows.length === 0) {
+        if (result.rows.length === 0) {
             return res.status(401).json({ message: 'Invalid username or password' });
         }
 
-        const user = rows[0];
+        const user = result.rows[0];
 
         // Compare plain text password with hashed password in DB
         const isMatch = await bcrypt.compare(password, user.password);

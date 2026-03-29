@@ -1,8 +1,5 @@
-CREATE DATABASE IF NOT EXISTS pos_system;
-USE pos_system;
-
 CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     username VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL,
@@ -10,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     category VARCHAR(100) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
@@ -21,7 +18,7 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 CREATE TABLE IF NOT EXISTS customers (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     phone VARCHAR(50),
     email VARCHAR(255),
@@ -31,7 +28,7 @@ CREATE TABLE IF NOT EXISTS customers (
 );
 
 CREATE TABLE IF NOT EXISTS sales (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     cashier VARCHAR(100) NOT NULL,
     customer_id INT,
     customer_name VARCHAR(255) DEFAULT 'Walk-in',
@@ -46,7 +43,7 @@ CREATE TABLE IF NOT EXISTS sales (
 );
 
 CREATE TABLE IF NOT EXISTS sale_items (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     sale_id INT NOT NULL,
     product_id INT NOT NULL,
     product_name VARCHAR(255) NOT NULL,
@@ -54,11 +51,11 @@ CREATE TABLE IF NOT EXISTS sale_items (
     unit_price DECIMAL(10, 2) NOT NULL,
     line_total DECIMAL(10, 2) NOT NULL,
     FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE NO ACTION
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS inventory_log (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     product_id INT NOT NULL,
     change_type VARCHAR(50) NOT NULL,
     qty_change INT NOT NULL,
@@ -66,5 +63,3 @@ CREATE TABLE IF NOT EXISTS inventory_log (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
-
--- Note: We will dynamically seed an admin user via Node so we don't hardcode bcrypt hashes in SQL.
